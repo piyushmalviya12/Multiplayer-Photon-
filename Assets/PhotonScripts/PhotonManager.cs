@@ -10,7 +10,9 @@ using UnityEngine.SceneManagement;
 
 public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks 
 {
-    
+    private static PhotonManager _instance;
+    public static PhotonManager Instance => _instance;
+
     #region Panels , InputFields, Text and Buttons
     public GameObject connectionPanel, lobbyPanel, roomPanel , roomListPanel;
     public Button connectBtn, createRoomBtn, JoinRoomBtn, joinBtn, startBtn, leaveBtn, backToLobbyBtn, leaveLobbyBtn;
@@ -25,12 +27,26 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
     private Dictionary<string, RoomInfo> roomListData;
     private Dictionary<string, GameObject> roomListObjects;
 
+    private TicTacToeGameManager ticTacToeGameManager;
+
   
-   
+
     #region Unity Methods
+    void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+
+        _instance = this;
+        DontDestroyOnLoad(this.gameObject);
+    }
+
     public void Start()
     {
-         instance = this;
+        instance = this;
         connectBtn.onClick.AddListener(OnClickConnect);
         createRoomBtn.onClick.AddListener(OnClickRoomCreate);
         leaveBtn.onClick.AddListener(OnClickLeaveBtn);
@@ -38,15 +54,19 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
         backToLobbyBtn.onClick.AddListener(OnClickBackToLobbyBtn);
         startBtn.onClick.AddListener(OnStartBtnClick);
         PhotonNetwork.AutomaticallySyncScene = true;
-
-      // counterInstance = GetComponent<Counter>();
+        
+       
 
         roomListData = new Dictionary<string, RoomInfo>();
         roomListObjects = new Dictionary<string, GameObject>();
+       
+        ticTacToeGameManager = GetComponent<TicTacToeGameManager>();
+      
     }
     public void Update()
     {
         clientstatetxt.text = PhotonNetwork.NetworkClientState.ToString();
+        
     }
     public void OnEnable()
     {
@@ -54,7 +74,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
         PhotonNetwork.AddCallbackTarget(this);
         PhotonNetwork.NetworkingClient.EventReceived += OnEvent;
     }
-    public void onDisable()
+    public void OnDisable()
     {
         PhotonNetwork.RemoveCallbackTarget(this);
         PhotonNetwork.NetworkingClient.EventReceived -= OnEvent;
@@ -70,7 +90,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
 
     #region Static Data for event
     public static byte scene = 100, playerData =101, btnContent = 102;
-   
+    private GameObject localPlayer;
+
     #endregion
     #region UIMethods
 
@@ -133,12 +154,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
         {
             PhotonNetwork.LeaveLobby();
         }
-       /* if (!PhotonNetwork.IsMasterClient)
-        {
-            roomListPanel.SetActive(false);
-            roomPanel.SetActive(true);
-            startBtn.gameObject.SetActive(false);
-        }*/
+       
         PhotonNetwork.JoinRoom(roomName);
     }
     public void ClearRoomList()
@@ -156,17 +172,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
     {
         if (PhotonNetwork.LocalPlayer.IsMasterClient)
         {
-            PhotonNetwork.LoadLevel("GameScene");
+             PhotonNetwork.LoadLevel("TicTacToe");
+                      
         }
-       /* string sceneName = "GameScene";
-        object[] data =
-        {
-             PhotonNetwork.LocalPlayer,
-             sceneName
-        };
-        RaiseEvt(scene,data,ReceiverGroup.Others);
-        SceneManager.LoadScene(sceneName);
-        Debug.Log("RaiseEvt"+ scene);*/
+     
     }
 
     public void RaiseClickEvent()
@@ -213,7 +222,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
     {
         Debug.Log(PhotonNetwork.LocalPlayer.NickName + " room Joined");
        
-       
         if (PhotonNetwork.LocalPlayer.IsMasterClient)
         {
             roomPanel.SetActive(true);
@@ -222,7 +230,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
         }
         else
         {
-           //s playerName2.text = PhotonNetwork.LocalPlayer.NickName;
+            //s playerName2.text = PhotonNetwork.LocalPlayer.NickName;
             roomPanel.SetActive(true);
             roomListPanel.SetActive(false);
             startBtn.gameObject.SetActive(false);
@@ -231,17 +239,18 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
             playerName2.text = PhotonNetwork.PlayerList[1].NickName;
             object[] data =
             {
-                        PhotonNetwork.LocalPlayer,
-                        playerName1,
-                        playerName2
-                    };
+                          PhotonNetwork.LocalPlayer,
+                          playerName1,
+                          playerName2
+                      };
             Debug.Log("player1...>" + playerName1);
             Debug.Log("player2...>" + playerName2);
             Debug.Log("Event Raise " + playerData);
             RaiseEvt(playerData, data, ReceiverGroup.All);
         }
+      
     }
-
+   
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         ClearRoomList();
@@ -310,6 +319,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
         Debug.Log(newPlayer.NickName + "Joined");
         playerName1.text = PhotonNetwork.LocalPlayer.NickName;
         playerName2.text = newPlayer.NickName;
+        startBtn.gameObject.SetActive(true);
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
@@ -322,12 +332,12 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
 
 
     #region OnEvent
-
+   
     public void OnEvent(EventData photonEvent)
     {
         
         Debug.Log(photonEvent.Code + "...EventCode");
-       
+
         if (photonEvent.Code == playerData)
         {
             Debug.Log("Event Recieved " + playerData);
@@ -339,23 +349,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
             playerName2.text = player2Name;
         }
 
-        if (photonEvent.Code == btnContent) 
-        {
-            object[] data = (object[])photonEvent.CustomData;
-            int actorNumber = (int)data[0];
-            if (PhotonNetwork.LocalPlayer.ActorNumber != actorNumber)
-            {
-                Counter.cInstance.clickBtn.gameObject.SetActive(false);
-            }
-        }
-        /*if (photonEvent.Code == scene)
-        {
-            Debug.Log("Event Recieved for scene" + scene);
-            var receivedData = (object[])photonEvent.CustomData;
-            var player = (Player)receivedData[0];
-            SceneManager.LoadScene("GameScene");
-          
-        }*/
+     
     }
     #endregion
 

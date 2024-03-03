@@ -362,6 +362,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clickBtn: {fileID: 4804469015057759968, guid: 5a74432d2ae9fb344b5bb66dbbf736d6, type: 3}
   counterTxt: {fileID: 5672392712320339090, guid: d2d3fbd3dc3f7fd488ef346afa985ac1, type: 3}
+  buttonToggleEventCode: 1
 --- !u!1 &516674186
 GameObject:
   m_ObjectHideFlags: 0
@@ -960,6 +961,10 @@ PrefabInstance:
     - target: {fileID: 4804469015057759970, guid: 5a74432d2ae9fb344b5bb66dbbf736d6, type: 3}
       propertyPath: m_Name
       value: DarwBtn
+      objectReference: {fileID: 0}
+    - target: {fileID: 4804469015057759970, guid: 5a74432d2ae9fb344b5bb66dbbf736d6, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4804469015057759971, guid: 5a74432d2ae9fb344b5bb66dbbf736d6, type: 3}
       propertyPath: m_Pivot.x

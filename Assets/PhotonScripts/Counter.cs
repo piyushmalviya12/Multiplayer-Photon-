@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine.UI;
 using Photon.Realtime;
 using Photon.Pun;
+using ExitGames.Client.Photon;
 
 
 
@@ -16,52 +17,74 @@ public class Counter : MonoBehaviour
     private int drawChance1 = 10, drawChance2 = 10;
     private int sum1,sum2;
     public static Counter cInstance;
-    //private static PhotonManager PhotonManagerInstance;
-    // Start is called before the first frame update
+    public byte buttonToggleEventCode = 1;
     void Start()
     {
         cInstance = this;
+        //clickBtn = GetComponent<Button>();
+       // clickBtn.onClick.AddListener(OnClick);
         clickBtn.onClick.AddListener(ClickCounter);
-        //PhotonManagerInstance = GetComponent<PhotonManager>();
+        //SetButtonInteractable(PhotonManager.instance.photonView.IsMine);
+        if (PhotonNetwork.IsMasterClient)
+        {
+            clickBtn.gameObject.SetActive(true);
+        }
     }
-    
+   
+/*    public void OnClick()
+    {
+        if (PhotonManager.instance.photonView.IsMine)
+        {
+            PhotonNetwork.RaiseEvent(buttonToggleEventCode, null, RaiseEventOptions.Default, SendOptions.SendReliable);
+        }
+    }
 
-   public void ClickCounter()
+    public void SetButtonInteractable(bool interactable)
+    {
+        clickBtn.interactable = interactable;
+    }
+*/
+  
+    public void ClickCounter()
     {
 
         Debug.Log("ClickCounter called");
-        if (PhotonNetwork.LocalPlayer.IsMasterClient) {
-                     if (drawChance1 > 0)
-                     {
-                         randomNum = Random.Range(0, 10);
-                         counterTxt.text = randomNum.ToString();
-                         sum1 += randomNum;
-                         Debug.Log(PhotonNetwork.LocalPlayer.NickName + " Clicked");
-                         drawChance1--;
-                         PhotonManager.instance.RaiseClickEvent();
+        if (PhotonNetwork.LocalPlayer.IsMasterClient)
+        {
+            if (drawChance1 > 0)
+            {
+                randomNum = Random.Range(0, 10);
+                counterTxt.text = randomNum.ToString();
+                sum1 += randomNum;
+                Debug.Log(PhotonNetwork.LocalPlayer.NickName + " Clicked");
+                drawChance1--;
+              //  PhotonManager.instance.RaiseClickEvent();
 
-                     }
-                     else
-                     {
-                        Debug.Log(PhotonNetwork.LocalPlayer.NickName + " sum is Clicked "+ sum1);
-                     }
             }
             else
             {
-                     if (drawChance2 > 0)
-                     {
-                         randomNum = Random.Range(0, 10);
-                         counterTxt.text = randomNum.ToString();
-                         sum2 += randomNum;
-                         Debug.Log(PhotonNetwork.LocalPlayer.NickName + " Clicked");
-                         drawChance2--;
-                     }
-                     else
-                     {
-                         Debug.Log(PhotonNetwork.LocalPlayer.NickName + " sum is Clicked " + sum2);
-                     }
+                Debug.Log(PhotonNetwork.LocalPlayer.NickName + " sum is Clicked " + sum1);
+            }
+        }
+        else
+        {
+            if (drawChance2 > 0)
+            {
+                randomNum = Random.Range(0, 10);
+                counterTxt.text = randomNum.ToString();
+                sum2 += randomNum;
+                Debug.Log(PhotonNetwork.LocalPlayer.NickName + " Clicked");
+                drawChance2--;
+            }
+            else
+            {
+                Debug.Log(PhotonNetwork.LocalPlayer.NickName + " sum is Clicked " + sum2);
+            }
         }
     }
-       
-    }
+}
 
+
+
+       
+    
