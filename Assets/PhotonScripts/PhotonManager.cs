@@ -22,14 +22,11 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
 
     public GameObject roomListPrefab;
     public GameObject roomListParent;
-    #endregion
 
     private Dictionary<string, RoomInfo> roomListData;
     private Dictionary<string, GameObject> roomListObjects;
+    #endregion
 
-    private TicTacToeGameManager ticTacToeGameManager;
-
-  
 
     #region Unity Methods
     void Awake()
@@ -60,7 +57,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks , ILobbyCallbacks
         roomListData = new Dictionary<string, RoomInfo>();
         roomListObjects = new Dictionary<string, GameObject>();
        
-        ticTacToeGameManager = GetComponent<TicTacToeGameManager>();
+        
       
     }
     public void Update()
